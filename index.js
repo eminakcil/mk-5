@@ -2,16 +2,16 @@ if (process.env.NODE_ENV !== 'production') {
   require('dotenv').config();
 }
 const Discord = require("discord.js");
-const { prefix } = require("./config.json");  
+const { prefix } = require("./config.json");
 const ytdl = require("ytdl-core");
-const ytSearch = require('youtube-search');
+const ytSearch = require("yt-search");
 
 const client = new Discord.Client();
 
 const queue = new Map();
 
 client.once("ready", () => {
-  console.log("hazıırm");
+  console.log("hazırım");
 });
 
 client.once("reconnecting", () => {
@@ -37,12 +37,12 @@ client.on("message", async message => {
   } else if (message.content.startsWith(`${prefix}dur`)) {
     stop(message, serverQueue);
     return;
+  } else if (message.content.startsWith(`${prefix}ara`)) {
+    
   }
 });
 
 async function execute(message, serverQueue) {
-  const args = message.content.split(" ");
-
   const voiceChannel = message.member.voice.channel;
   if (!voiceChannel)
     return message.channel.send(
@@ -55,54 +55,63 @@ async function execute(message, serverQueue) {
     );
   }
 
+  
   //search algorithm
 
-  var opts = {
-    maxResults: 1,
-    key: args[1]
-  };
+  const args = message.content.split(" ");
+  console.log(args);
+  if (args.length > 1) {
+    const args = message.content.split(" ");
+    args.shift()
+    const searchText = args.join(' ').toString();
+    const r = await ytSearch(searchText)
+    if (r.videos.length != 0) {
+      console.log(r.videos[0]);
 
-  await ytSearch('jsconf', opts, function(err, results) {
-    if(err) return console.log(err);
-   
-    console.dir(results);
-    message.channel.send(results);
-  });
-  
+      message.channel.send(`**${searchText} -> ${r.videos[0].title}**`);
+      
+      const songInfo = await ytdl.getInfo(r.videos[0].url);
+      const song = {
+        title: songInfo.videoDetails.title,
+        url: songInfo.videoDetails.video_url
+      };
+    
+      if (!serverQueue) {
+        const queueContruct = {
+          textChannel: message.channel,
+          voiceChannel: voiceChannel,
+          connection: null,
+          songs: [],
+          volume: 5,
+          playing: true
+        };
+    
+        queue.set(message.guild.id, queueContruct);
+    
+        queueContruct.songs.push(song);
+    
+        try {
+          var connection = await voiceChannel.join();
+          queueContruct.connection = connection;
+          play(message.guild, queueContruct.songs[0]);
+        } catch (err) {
+          console.log(err);
+          queue.delete(message.guild.id);
+          return message.channel.send(err);
+        }
+      } else {
+        serverQueue.songs.push(song);
+        return message.channel.send(`**${song.title}** sıraya eklendi`);
+      }
 
-  const songInfo = await ytdl.getInfo(args[1]);
-  const song = {
-    title: songInfo.videoDetails.title,
-    url: songInfo.videoDetails.video_url
-  };
-
-  if (!serverQueue) {
-    const queueContruct = {
-      textChannel: message.channel,
-      voiceChannel: voiceChannel,
-      connection: null,
-      songs: [],
-      volume: 5,
-      playing: true
-    };
-
-    queue.set(message.guild.id, queueContruct);
-
-    queueContruct.songs.push(song);
-
-    try {
-      var connection = await voiceChannel.join();
-      queueContruct.connection = connection;
-      play(message.guild, queueContruct.songs[0]);
-    } catch (err) {
-      console.log(err);
-      queue.delete(message.guild.id);
-      return message.channel.send(err);
+    } else {
+      message.channel.send("sonuç bulunamadı");
     }
   } else {
-    serverQueue.songs.push(song);
-    return message.channel.send(`**${song.title}** sıraya eklendi`);
+    message.channel.send("hatalı kullanım");
   }
+
+  
 }
 
 function skip(message, serverQueue) {
