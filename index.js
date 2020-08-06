@@ -68,8 +68,6 @@ async function execute(message, serverQueue) {
     if (r.videos.length != 0) {
       console.log(r.videos[0]);
 
-      message.channel.send(`**${searchText} -> ${r.videos[0].title}**`);
-      
       const songInfo = await ytdl.getInfo(r.videos[0].url);
       const song = {
         title: songInfo.videoDetails.title,
