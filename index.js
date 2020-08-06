@@ -55,18 +55,16 @@ async function execute(message, serverQueue) {
     );
   }
 
-  
   //search algorithm
-
   const args = message.content.split(" ");
-  console.log(args);
+  // console.log(args);
   if (args.length > 1) {
     const args = message.content.split(" ");
     args.shift()
     const searchText = args.join(' ').toString();
     const r = await ytSearch(searchText)
     if (r.videos.length != 0) {
-      console.log(r.videos[0]);
+      // console.log(r.videos[0]);
 
       const songInfo = await ytdl.getInfo(r.videos[0].url);
       const song = {
