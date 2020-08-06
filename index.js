@@ -37,9 +37,7 @@ client.on("message", async message => {
   } else if (message.content.startsWith(`${prefix}dur`)) {
     stop(message, serverQueue);
     return;
-  } else if (message.content.startsWith(`${prefix}ara`)) {
-    
-  }
+  } 
 });
 
 async function execute(message, serverQueue) {
@@ -71,7 +69,7 @@ async function execute(message, serverQueue) {
         title: songInfo.videoDetails.title,
         url: songInfo.videoDetails.video_url
       };
-    
+
       if (!serverQueue) {
         const queueContruct = {
           textChannel: message.channel,
@@ -81,11 +79,11 @@ async function execute(message, serverQueue) {
           volume: 5,
           playing: true
         };
-    
+
         queue.set(message.guild.id, queueContruct);
-    
+
         queueContruct.songs.push(song);
-    
+
         try {
           var connection = await voiceChannel.join();
           queueContruct.connection = connection;
@@ -107,7 +105,7 @@ async function execute(message, serverQueue) {
     message.channel.send("hatalı kullanım");
   }
 
-  
+
 }
 
 function skip(message, serverQueue) {
