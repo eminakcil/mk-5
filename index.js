@@ -4,6 +4,7 @@ if (process.env.NODE_ENV !== 'production') {
 const Discord = require("discord.js");
 const { prefix } = require("./config.json");  
 const ytdl = require("ytdl-core");
+const ytSearch = require('youtube-search');
 
 const client = new Discord.Client();
 
@@ -53,6 +54,21 @@ async function execute(message, serverQueue) {
       "ses kanalınıza katılmak ve konuşmak için izinlere ihtiyacım var"
     );
   }
+
+  //search algorithm
+
+  var opts = {
+    maxResults: 1,
+    key: args[1]
+  };
+
+  await ytSearch('jsconf', opts, function(err, results) {
+    if(err) return console.log(err);
+   
+    console.dir(results);
+    message.channel.send(results);
+  });
+  
 
   const songInfo = await ytdl.getInfo(args[1]);
   const song = {
